@@ -7,7 +7,9 @@ import com.example.delivery.strategy.RouteStrategy;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class RouteComparison {
 
@@ -20,7 +22,7 @@ public class RouteComparison {
             );
         }
 
-        if (strategies.stream().anyMatch(java.util.Objects::isNull)) {
+        if (strategies.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException(
                     "Strategy list cannot contain null"
             );
@@ -33,6 +35,8 @@ public class RouteComparison {
             List<Route> routes,
             DeliveryRequest request) {
 
+        Objects.requireNonNull(request, "Request cannot be null");
+
         Map<String, String> results = new LinkedHashMap<>();
 
         for (RouteStrategy strategy : strategies) {
@@ -41,27 +45,43 @@ public class RouteComparison {
             try {
                 Route route = strategy.selectRoute(routes, request);
 
-                String result = strategy.explainSelection(route)
-                        + "\nDistance: " + route.distanceKm() + " km"
-                        + "\nEstimated time: " + route.estimatedMinutes() + " min"
-                        + "\nBase cost: " + route.cost()
-                        + "\nTotal cost: " + calculateTotalCost(route)
-                        + "\nCO2 emissions: " + route.co2Kg() + " kg"
-                        + "\nSafety score: " + route.safetyScore() + "/100"
-                        + "\nHistorical on-time rate: "
-                        + route.onTimeRate() + "%";
-
+                String result = formatResult(strategy, route);
                 results.put(name, result);
 
             } catch (NoSuitableRouteException exception) {
                 results.put(
                         name,
-                        "No suitable route: " + exception.getMessage()
+                        "No suitable route found.\n"
+                                + "Reason: " + exception.getMessage()
                 );
             }
         }
 
         return results;
+    }
+
+    private String formatResult(RouteStrategy strategy, Route route) {
+        return "Selected route: " + route.id()
+                + "\nReason: " + strategy.explainSelection(route)
+                + String.format(
+                        Locale.US,
+                        "\nDistance: %.1f km"
+                                + "\nDelivery time: %d min"
+                                + "\nBase cost: %.2f"
+                                + "\nTotal cost: %.2f"
+                                + "\nCO2 emissions: %.2f kg",
+                        route.distanceKm(),
+                        route.estimatedMinutes(),
+                        route.cost(),
+                        calculateTotalCost(route),
+                        route.co2Kg()
+                )
+                + "\nSafety score: " + route.safetyScore() + "/100"
+                + String.format(
+                        Locale.US,
+                        "\nHistorical on-time rate: %.1f%%",
+                        route.onTimeRate()
+                );
     }
 
     private double calculateTotalCost(Route route) {

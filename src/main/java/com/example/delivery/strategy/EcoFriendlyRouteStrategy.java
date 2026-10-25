@@ -50,16 +50,6 @@ public class EcoFriendlyRouteStrategy extends AbstractRouteStrategy {
     }
     @Override
     public String explainSelection(Route route) {
-        double score = ecoScore(route);
-
-        return String.format(
-                java.util.Locale.US,
-                "Selected %s because it has the lowest eco score: %.2f "
-                        + "(CO2: %.2f kg, distance: %.2f km).",
-                route.id(),
-                score,
-                route.co2Kg(),
-                route.distanceKm()
-        );
+        return "Lowest eco score using 70% CO2 and 30% distance.";
     }
 }

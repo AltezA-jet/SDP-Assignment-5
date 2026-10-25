@@ -36,16 +36,10 @@ public class RoutePlanner {
         List<String> rejectedReasons =
                 explainRejectedRoutes(routes, request, selected);
 
-        String explanation = strategy.explainSelection(selected)
-            + " Estimated time: "
-            + selected.estimatedMinutes() + " minutes, total cost: "
-            + String.format(java.util.Locale.US, "%.2f", calculateTotalCost(selected))
-            + ", emissions: " + selected.co2Kg() + " kg.";
-
         return new RouteDecision(
                 selected,
                 strategy.getStrategyName(),
-                explanation,
+                strategy.explainSelection(selected),
                 rejectedReasons
         );
     }
@@ -55,7 +49,11 @@ public class RoutePlanner {
             DeliveryRequest request,
             Route selected) {
 
+        List<String> eligibleButNotSelected = new ArrayList<>();
+        List<String> rejected = new ArrayList<>();
         List<String> reasons = new ArrayList<>();
+
+        boolean ignoredNullRoute = false;
 
         if (routes == null) {
             return reasons;
@@ -63,7 +61,7 @@ public class RoutePlanner {
 
         for (Route route : routes) {
             if (route == null) {
-                reasons.add("A null route was ignored.");
+                ignoredNullRoute = true;
                 continue;
             }
 
@@ -74,7 +72,7 @@ public class RoutePlanner {
             List<String> problems = new ArrayList<>();
 
             if (!route.available()) {
-                problems.add("route is unavailable");
+                problems.add("unavailable");
             }
 
             if (!route.origin().equals(request.origin())) {
@@ -90,7 +88,7 @@ public class RoutePlanner {
             }
 
             if (calculateTotalCost(route) > request.maxBudget()) {
-                problems.add("total cost exceeds budget");
+                problems.add("budget exceeded");
             }
 
             if (route.estimatedMinutes() > request.maxDeliveryMinutes()) {
@@ -102,14 +100,28 @@ public class RoutePlanner {
             }
 
             if (problems.isEmpty()) {
-                reasons.add("Route " + route.id()
-                        + " was not selected by the "
-                        + strategy.getStrategyName()
-                        + " strategy because another eligible route scored better.");
+                eligibleButNotSelected.add(route.id());
             } else {
-                reasons.add("Route " + route.id() + " rejected: "
-                        + String.join(", ", problems) + ".");
+                rejected.add(
+                        "Route " + route.id() + ": "
+                                + String.join(", ", problems) + "."
+                );
             }
+        }
+
+        if (!eligibleButNotSelected.isEmpty()) {
+            reasons.add(
+                    "Routes " + String.join(", ", eligibleButNotSelected)
+                            + " met all constraints but ranked below "
+                            + selected.id() + " under the "
+                            + strategy.getStrategyName() + " strategy."
+            );
+        }
+
+        reasons.addAll(rejected);
+
+        if (ignoredNullRoute) {
+            reasons.add("Null route entries were ignored.");
         }
 
         return reasons;

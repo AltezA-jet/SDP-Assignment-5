@@ -24,9 +24,6 @@ public class SafestRouteStrategy extends AbstractRouteStrategy {
     }
     @Override
     public String explainSelection(Route route) {
-        return "Selected " + route.id()
-                + " because it has the highest safety score: "
-                + route.safetyScore() + "/100. "
-                + "Time and cost are tie-breakers.";
+        return "Highest safety score; time and total cost break ties.";
     }
 }

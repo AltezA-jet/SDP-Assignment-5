@@ -24,9 +24,6 @@ public class FastestRouteStrategy extends AbstractRouteStrategy {
     }
     @Override
     public String explainSelection(Route route) {
-        return "Selected " + route.id()
-                + " because it has the shortest estimated delivery time: "
-                + route.estimatedMinutes() + " minutes. "
-                + "Safety and total cost are tie-breakers.";
+        return "Lowest estimated delivery time; safety and total cost break ties.";
     }
 }

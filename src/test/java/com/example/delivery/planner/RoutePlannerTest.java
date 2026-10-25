@@ -52,11 +52,12 @@ class RoutePlannerTest {
 
         RouteDecision decision = planner.plan(
                 DemoData.createRoutes(),
-                DemoData.createRequest(DeliveryPriority.URGENT)
+                DemoData.createRequest(DeliveryPriority.STANDARD)
         );
 
-        assertTrue(decision.explanation().contains("Fastest"));
-        assertTrue(decision.explanation().contains("R1"));
+        assertEquals("Fastest", decision.strategyName());
+        assertEquals("R1", decision.route().id());
+        assertTrue(decision.explanation().contains("delivery time"));
     }
 
     @Test

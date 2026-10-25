@@ -91,21 +91,7 @@ public class BalancedRouteStrategy extends AbstractRouteStrategy {
 
         @Override
         public String explainSelection(Route route) {
-                return String.format(
-                                java.util.Locale.US,
-                                "Selected %s using balanced optimization. "
-                                                + "Weights: time %.0f%%, cost %.0f%%, "
-                                                + "distance %.0f%%, emissions %.0f%%. "
-                                                + "Route metrics: %d min, %.2f cost, "
-                                                + "%.2f km, %.2f kg CO2.",
-                                route.id(),
-                                timeWeight * 100,
-                                costWeight * 100,
-                                distanceWeight * 100,
-                                emissionWeight * 100,
-                                route.estimatedMinutes(),
-                                calculateTotalCost(route),
-                                route.distanceKm(),
-                                route.co2Kg());
+        return "Lowest normalized weighted score: time 35%, cost 25%, "
+                + "distance 20%, emissions 20%.";
         }
 }

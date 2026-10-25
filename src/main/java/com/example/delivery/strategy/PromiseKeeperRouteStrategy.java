@@ -34,13 +34,7 @@ public class PromiseKeeperRouteStrategy extends AbstractRouteStrategy {
     }
     @Override
     public String explainSelection(Route route) {
-        return String.format(
-                java.util.Locale.US,
-                "Selected %s because %.1f%% of historical deliveries "
-                        + "on this route arrived on time. "
-                        + "Safety, time and cost are tie-breakers.",
-                route.id(),
-                route.onTimeRate()
-        );
+        return "Highest historical on-time delivery rate; safety, time "
+                + "and cost break ties.";
     }
 }
