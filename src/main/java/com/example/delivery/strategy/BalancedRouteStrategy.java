@@ -8,84 +8,104 @@ import java.util.List;
 
 public class BalancedRouteStrategy extends AbstractRouteStrategy {
 
-    private final double timeWeight;
-    private final double costWeight;
-    private final double distanceWeight;
-    private final double emissionWeight;
+        private final double timeWeight;
+        private final double costWeight;
+        private final double distanceWeight;
+        private final double emissionWeight;
 
-    public BalancedRouteStrategy() {
-        this(0.35, 0.25, 0.20, 0.20);
-    }
-
-    public BalancedRouteStrategy(
-            double timeWeight,
-            double costWeight,
-            double distanceWeight,
-            double emissionWeight) {
-
-        double sum = timeWeight + costWeight
-                + distanceWeight + emissionWeight;
-
-        if (!Double.isFinite(timeWeight)
-                || !Double.isFinite(costWeight)
-                || !Double.isFinite(distanceWeight)
-                || !Double.isFinite(emissionWeight)
-                || timeWeight < 0
-                || costWeight < 0
-                || distanceWeight < 0
-                || emissionWeight < 0
-                || Math.abs(sum - 1.0) > 1e-9) {
-            throw new IllegalArgumentException(
-                    "Weights must be non-negative and sum to 1.0");
+        public BalancedRouteStrategy() {
+                this(0.35, 0.25, 0.20, 0.20);
         }
 
-        this.timeWeight = timeWeight;
-        this.costWeight = costWeight;
-        this.distanceWeight = distanceWeight;
-        this.emissionWeight = emissionWeight;
-    }
+        public BalancedRouteStrategy(
+                        double timeWeight,
+                        double costWeight,
+                        double distanceWeight,
+                        double emissionWeight) {
 
-    @Override
-    public Route selectRoute(List<Route> routes, DeliveryRequest request) {
-        List<Route> eligible = getEligibleRoutes(routes, request);
+                double sum = timeWeight + costWeight
+                                + distanceWeight + emissionWeight;
 
-        double maxTime = eligible.stream()
-                .mapToDouble(Route::estimatedMinutes).max().orElse(1);
+                if (!Double.isFinite(timeWeight)
+                                || !Double.isFinite(costWeight)
+                                || !Double.isFinite(distanceWeight)
+                                || !Double.isFinite(emissionWeight)
+                                || timeWeight < 0
+                                || costWeight < 0
+                                || distanceWeight < 0
+                                || emissionWeight < 0
+                                || Math.abs(sum - 1.0) > 1e-9) {
+                        throw new IllegalArgumentException(
+                                        "Weights must be non-negative and sum to 1.0");
+                }
 
-        double maxCost = eligible.stream()
-                .mapToDouble(this::calculateTotalCost).max().orElse(1);
+                this.timeWeight = timeWeight;
+                this.costWeight = costWeight;
+                this.distanceWeight = distanceWeight;
+                this.emissionWeight = emissionWeight;
+        }
 
-        double maxDistance = eligible.stream()
-                .mapToDouble(Route::distanceKm).max().orElse(1);
+        @Override
+        public Route selectRoute(List<Route> routes, DeliveryRequest request) {
+                List<Route> eligible = getEligibleRoutes(routes, request);
 
-        double maxEmissions = eligible.stream()
-                .mapToDouble(Route::co2Kg).max().orElse(1);
+                double maxTime = eligible.stream()
+                                .mapToDouble(Route::estimatedMinutes).max().orElse(1);
 
-        return eligible.stream()
-                .min(Comparator.comparingDouble(route ->
-                        score(route, maxTime, maxCost, maxDistance, maxEmissions)))
-                .orElseThrow();
-    }
+                double maxCost = eligible.stream()
+                                .mapToDouble(this::calculateTotalCost).max().orElse(1);
 
-    private double score(
-            Route route,
-            double maxTime,
-            double maxCost,
-            double maxDistance,
-            double maxEmissions) {
+                double maxDistance = eligible.stream()
+                                .mapToDouble(Route::distanceKm).max().orElse(1);
 
-        return timeWeight * normalize(route.estimatedMinutes(), maxTime)
-                + costWeight * normalize(calculateTotalCost(route), maxCost)
-                + distanceWeight * normalize(route.distanceKm(), maxDistance)
-                + emissionWeight * normalize(route.co2Kg(), maxEmissions);
-    }
+                double maxEmissions = eligible.stream()
+                                .mapToDouble(Route::co2Kg).max().orElse(1);
 
-    private double normalize(double value, double maximum) {
-        return maximum == 0 ? 0 : value / maximum;
-    }
+                return eligible.stream()
+                                .min(Comparator.comparingDouble(
+                                                route -> score(route, maxTime, maxCost, maxDistance, maxEmissions)))
+                                .orElseThrow();
+        }
 
-    @Override
-    public String getStrategyName() {
-        return "Balanced";
-    }
+        private double score(
+                        Route route,
+                        double maxTime,
+                        double maxCost,
+                        double maxDistance,
+                        double maxEmissions) {
+
+                return timeWeight * normalize(route.estimatedMinutes(), maxTime)
+                                + costWeight * normalize(calculateTotalCost(route), maxCost)
+                                + distanceWeight * normalize(route.distanceKm(), maxDistance)
+                                + emissionWeight * normalize(route.co2Kg(), maxEmissions);
+        }
+
+        private double normalize(double value, double maximum) {
+                return maximum == 0 ? 0 : value / maximum;
+        }
+
+        @Override
+        public String getStrategyName() {
+                return "Balanced";
+        }
+
+        @Override
+        public String explainSelection(Route route) {
+                return String.format(
+                                java.util.Locale.US,
+                                "Selected %s using balanced optimization. "
+                                                + "Weights: time %.0f%%, cost %.0f%%, "
+                                                + "distance %.0f%%, emissions %.0f%%. "
+                                                + "Route metrics: %d min, %.2f cost, "
+                                                + "%.2f km, %.2f kg CO2.",
+                                route.id(),
+                                timeWeight * 100,
+                                costWeight * 100,
+                                distanceWeight * 100,
+                                emissionWeight * 100,
+                                route.estimatedMinutes(),
+                                calculateTotalCost(route),
+                                route.distanceKm(),
+                                route.co2Kg());
+        }
 }

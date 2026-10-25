@@ -10,6 +10,7 @@ import com.example.delivery.planner.RoutePlanner;
 import com.example.delivery.selector.StrategySelector;
 import com.example.delivery.strategy.*;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +61,8 @@ public class Main {
                 new CheapestRouteStrategy(),
                 new EcoFriendlyRouteStrategy(),
                 new BalancedRouteStrategy(),
-                new SafestRouteStrategy()
+                new SafestRouteStrategy(),
+                new PromiseKeeperRouteStrategy()
         ));
 
         Map<String, String> results = comparison.compare(

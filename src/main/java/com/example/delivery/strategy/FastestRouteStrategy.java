@@ -22,4 +22,11 @@ public class FastestRouteStrategy extends AbstractRouteStrategy {
     public String getStrategyName() {
         return "Fastest";
     }
+    @Override
+    public String explainSelection(Route route) {
+        return "Selected " + route.id()
+                + " because it has the shortest estimated delivery time: "
+                + route.estimatedMinutes() + " minutes. "
+                + "Safety and total cost are tie-breakers.";
+    }
 }

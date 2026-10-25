@@ -36,12 +36,11 @@ public class RoutePlanner {
         List<String> rejectedReasons =
                 explainRejectedRoutes(routes, request, selected);
 
-        String explanation = "Route " + selected.id()
-                + " selected using " + strategy.getStrategyName()
-                + " strategy. Estimated time: "
-                + selected.estimatedMinutes() + " minutes, total cost: "
-                + calculateTotalCost(selected)
-                + ", emissions: " + selected.co2Kg() + " kg.";
+        String explanation = strategy.explainSelection(selected)
+            + " Estimated time: "
+            + selected.estimatedMinutes() + " minutes, total cost: "
+            + String.format(java.util.Locale.US, "%.2f", calculateTotalCost(selected))
+            + ", emissions: " + selected.co2Kg() + " kg.";
 
         return new RouteDecision(
                 selected,

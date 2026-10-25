@@ -1,4 +1,5 @@
 com\example\delivery\comparison\RouteComparisonTest.class
 com\example\delivery\selector\StrategySelectorTest.class
+com\example\delivery\model\RouteModelTest.class
 com\example\delivery\planner\RoutePlannerTest.class
 com\example\delivery\strategy\RouteStrategyTest.class

@@ -19,7 +19,8 @@ class RouteComparisonTest {
             new CheapestRouteStrategy(),
             new EcoFriendlyRouteStrategy(),
             new BalancedRouteStrategy(),
-            new SafestRouteStrategy()
+            new SafestRouteStrategy(),
+            new PromiseKeeperRouteStrategy()
     );
 
     @Test
@@ -31,12 +32,13 @@ class RouteComparisonTest {
                 DemoData.createRequest(DeliveryPriority.STANDARD)
         );
 
-        assertEquals(5, results.size());
+        assertEquals(6, results.size());
         assertTrue(results.containsKey("Fastest"));
         assertTrue(results.containsKey("Cheapest"));
         assertTrue(results.containsKey("EcoFriendly"));
         assertTrue(results.containsKey("Balanced"));
         assertTrue(results.containsKey("Safest"));
+        assertTrue(results.containsKey("PromiseKeeper"));
     }
 
     @Test
@@ -50,16 +52,20 @@ class RouteComparisonTest {
 
         assertTrue(results.get("Fastest").contains("R1"));
         assertTrue(results.get("Cheapest").contains("R7"));
+        assertTrue(results.get("PromiseKeeper").contains("R4"));
     }
 
     @Test
     void comparisonReportsWhenNoRouteIsSuitable() {
         RouteComparison comparison = new RouteComparison(strategies);
 
-        DeliveryRequest restrictiveRequest = new DeliveryRequest(
-                DemoData.createRequest(DeliveryPriority.STANDARD).origin(),
-                DemoData.createRequest(DeliveryPriority.STANDARD).destination(),
-                DeliveryPriority.STANDARD,
+        DeliveryRequest request =
+                DemoData.createRequest(DeliveryPriority.STANDARD);
+
+        DeliveryRequest restrictedRequest = new DeliveryRequest(
+                request.origin(),
+                request.destination(),
+                request.priority(),
                 0.0,
                 90,
                 20.0,
@@ -68,10 +74,10 @@ class RouteComparisonTest {
 
         Map<String, String> results = comparison.compare(
                 DemoData.createRoutes(),
-                restrictiveRequest
+                restrictedRequest
         );
 
-        assertEquals(5, results.size());
+        assertEquals(6, results.size());
         assertTrue(results.values().stream()
                 .allMatch(result -> result.contains("No suitable route")));
     }
@@ -85,7 +91,7 @@ class RouteComparisonTest {
     }
 
     @Test
-    void comparisonRejectsNullStrategyList() {
+    void constructorRejectsNullStrategyList() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new RouteComparison(null)

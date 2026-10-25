@@ -21,14 +21,14 @@ public final class DemoData {
 
     public static List<Route> createRoutes() {
         return List.of(
-                new Route("R1", ORIGIN, DESTINATION, 8.0, 20, 12.0, 2.1, true, 90),
-                new Route("R2", ORIGIN, DESTINATION, 10.0, 25, 8.0, 1.5, true, 95),
-                new Route("R3", ORIGIN, DESTINATION, 12.0, 30, 6.0, 1.0, true, 85),
-                new Route("R4", ORIGIN, DESTINATION, 9.0, 22, 15.0, 0.9, true, 98),
-                new Route("R5", ORIGIN, DESTINATION, 14.0, 35, 5.0, 0.8, true, 80),
-                new Route("R6", ORIGIN, DESTINATION, 11.0, 28, 9.0, 1.2, true, 92),
-                new Route("R7", ORIGIN, DESTINATION, 16.0, 40, 4.0, 0.7, true, 75),
-                new Route("R8", ORIGIN, DESTINATION, 7.0, 18, 10.0, 2.8, false, 88)
+                new Route("R1", ORIGIN, DESTINATION, 8, 20, 12, 2.1, true, 90, 75),
+                new Route("R2", ORIGIN, DESTINATION, 10, 25, 8, 1.5, true, 95, 98),
+                new Route("R3", ORIGIN, DESTINATION, 12, 30, 6, 1.0, true, 85, 93),
+                new Route("R4", ORIGIN, DESTINATION, 9, 22, 15, 0.9, true, 98, 99),
+                new Route("R5", ORIGIN, DESTINATION, 14, 35, 5, 0.8, true, 80, 96),
+                new Route("R6", ORIGIN, DESTINATION, 11, 28, 9, 1.2, true, 92, 97),
+                new Route("R7", ORIGIN, DESTINATION, 16, 40, 4, 0.7, true, 75, 91),
+                new Route("R8", ORIGIN, DESTINATION, 7, 18, 10, 2.8, false, 88, 70)
         );
     }
 

@@ -39,7 +39,7 @@ class RouteStrategyTest {
         Route route = new EcoFriendlyRouteStrategy()
                 .selectRoute(routes, request);
 
-        assertEquals("R1", route.id());
+        assertEquals("R4", route.id());
     }
 
     @Test
@@ -198,5 +198,18 @@ class RouteStrategyTest {
     @Test
     void fastestStrategyHasName() {
         assertEquals("Fastest", new FastestRouteStrategy().getStrategyName());
+    }
+    @Test
+    void promiseKeeperPrefersReliableRouteOverFastestRoute() {
+        Route fastest = new FastestRouteStrategy()
+                .selectRoute(routes, request);
+
+        Route reliable = new PromiseKeeperRouteStrategy()
+                .selectRoute(routes, request);
+
+        assertEquals("R1", fastest.id());
+        assertEquals("R4", reliable.id());
+
+        assertTrue(reliable.onTimeRate() > fastest.onTimeRate());
     }
 }

@@ -20,4 +20,18 @@ public class CheapestRouteStrategy extends AbstractRouteStrategy {
     public String getStrategyName() {
         return "Cheapest";
     }
+    @Override
+    public String explainSelection(Route route) {
+        double totalCost = calculateTotalCost(route);
+
+        return String.format(
+                java.util.Locale.US,
+                "Selected %s because it has the lowest total cost: "
+                        + "%.2f (base cost %.2f + distance charge %.2f).",
+                route.id(),
+                totalCost,
+                route.cost(),
+                route.distanceKm() * 0.15
+        );
+    }
 }

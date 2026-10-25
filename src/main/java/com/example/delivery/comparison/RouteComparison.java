@@ -20,6 +20,12 @@ public class RouteComparison {
             );
         }
 
+        if (strategies.stream().anyMatch(java.util.Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Strategy list cannot contain null"
+            );
+        }
+
         this.strategies = List.copyOf(strategies);
     }
 
@@ -33,21 +39,32 @@ public class RouteComparison {
             String name = strategy.getStrategyName();
 
             try {
-                Route selected = strategy.selectRoute(routes, request);
+                Route route = strategy.selectRoute(routes, request);
 
-                results.put(
-                        name,
-                        "Selected route: " + selected.id()
-                                + ", time: " + selected.estimatedMinutes()
-                                + " min, cost: " + selected.cost()
-                                + ", emissions: " + selected.co2Kg() + " kg"
-                );
+                String result = strategy.explainSelection(route)
+                        + "\nDistance: " + route.distanceKm() + " km"
+                        + "\nEstimated time: " + route.estimatedMinutes() + " min"
+                        + "\nBase cost: " + route.cost()
+                        + "\nTotal cost: " + calculateTotalCost(route)
+                        + "\nCO2 emissions: " + route.co2Kg() + " kg"
+                        + "\nSafety score: " + route.safetyScore() + "/100"
+                        + "\nHistorical on-time rate: "
+                        + route.onTimeRate() + "%";
+
+                results.put(name, result);
 
             } catch (NoSuitableRouteException exception) {
-                results.put(name, "No suitable route: " + exception.getMessage());
+                results.put(
+                        name,
+                        "No suitable route: " + exception.getMessage()
+                );
             }
         }
 
         return results;
+    }
+
+    private double calculateTotalCost(Route route) {
+        return route.cost() + route.distanceKm() * 0.15;
     }
 }

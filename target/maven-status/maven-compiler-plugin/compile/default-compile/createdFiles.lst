@@ -1,3 +1,4 @@
+com\example\delivery\strategy\PromiseKeeperRouteStrategy.class
 com\example\delivery\model\Location.class
 com\example\delivery\strategy\SafestRouteStrategy.class
 com\example\delivery\model\DeliveryRequest.class
