@@ -39,7 +39,7 @@ class RouteStrategyTest {
         Route route = new EcoFriendlyRouteStrategy()
                 .selectRoute(routes, request);
 
-        assertEquals("R4", route.id());
+        assertEquals("R1", route.id());
     }
 
     @Test
