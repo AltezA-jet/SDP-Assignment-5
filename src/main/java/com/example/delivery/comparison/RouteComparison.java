@@ -44,9 +44,7 @@ public class RouteComparison {
 
             try {
                 Route route = strategy.selectRoute(routes, request);
-
-                String result = formatResult(strategy, route);
-                results.put(name, result);
+                results.put(name, formatResult(strategy, route));
 
             } catch (NoSuitableRouteException exception) {
                 results.put(
@@ -65,11 +63,15 @@ public class RouteComparison {
                 + "\nReason: " + strategy.explainSelection(route)
                 + String.format(
                         Locale.US,
-                        "\nDistance: %.1f km"
+                        "\nRoute type: %s"
+                                + "\nTraffic: %s"
+                                + "\nDistance: %.1f km"
                                 + "\nDelivery time: %d min"
-                                + "\nBase cost: %.2f"
-                                + "\nTotal cost: %.2f"
+                                + "\nTransport-adjusted cost: %.2f"
+                                + "\nTotal calculated cost: %.2f"
                                 + "\nCO2 emissions: %.2f kg",
+                        route.routeType(),
+                        route.trafficLevel(),
                         route.distanceKm(),
                         route.estimatedMinutes(),
                         route.cost(),

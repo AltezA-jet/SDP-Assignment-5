@@ -4,6 +4,7 @@ import com.example.delivery.model.DeliveryRequest;
 import com.example.delivery.model.Route;
 import com.example.delivery.model.RouteDecision;
 import com.example.delivery.strategy.RouteStrategy;
+import com.example.delivery.transport.TransportMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,21 @@ import java.util.Objects;
 public class RoutePlanner {
 
     private RouteStrategy strategy;
+    private TransportMode transportMode;
 
+    // Preserves the existing constructor and behavior.
     public RoutePlanner(RouteStrategy strategy) {
         this.strategy = Objects.requireNonNull(strategy);
+        this.transportMode = null;
+    }
+
+    // New constructor combines a route-selection strategy and transport.
+    public RoutePlanner(
+            RouteStrategy strategy,
+            TransportMode transportMode) {
+
+        this.strategy = Objects.requireNonNull(strategy);
+        this.transportMode = Objects.requireNonNull(transportMode);
     }
 
     public void setStrategy(RouteStrategy strategy) {
@@ -25,21 +38,40 @@ public class RoutePlanner {
         return strategy;
     }
 
+    public void setTransportMode(TransportMode transportMode) {
+        this.transportMode = Objects.requireNonNull(transportMode);
+    }
+
+    public TransportMode getTransportMode() {
+        return transportMode;
+    }
+
     public RouteDecision plan(
             List<Route> routes,
             DeliveryRequest request) {
 
         Objects.requireNonNull(request, "Request cannot be null");
 
-        Route selected = strategy.selectRoute(routes, request);
+        List<Route> evaluatedRoutes = transportMode == null
+                ? routes
+                : transportMode.adaptRoutes(routes);
+
+        Route selected = strategy.selectRoute(evaluatedRoutes, request);
 
         List<String> rejectedReasons =
-                explainRejectedRoutes(routes, request, selected);
+                explainRejectedRoutes(evaluatedRoutes, request, selected);
+
+        String explanation = strategy.explainSelection(selected);
+
+        if (transportMode != null) {
+            explanation = "Transport: " + transportMode.getName()
+                    + ". " + explanation;
+        }
 
         return new RouteDecision(
                 selected,
                 strategy.getStrategyName(),
-                strategy.explainSelection(selected),
+                explanation,
                 rejectedReasons
         );
     }
@@ -71,8 +103,12 @@ public class RoutePlanner {
 
             List<String> problems = new ArrayList<>();
 
-            if (!route.available()) {
-                problems.add("unavailable");
+            if (transportMode != null && !transportMode.supports(route)) {
+                problems.add(
+                        "not suitable for " + transportMode.getName()
+                );
+            } else if (!route.available()) {
+                problems.add("route is unavailable");
             }
 
             if (!route.origin().equals(request.origin())) {
@@ -88,7 +124,7 @@ public class RoutePlanner {
             }
 
             if (calculateTotalCost(route) > request.maxBudget()) {
-                problems.add("budget exceeded");
+                problems.add("total cost exceeds budget");
             }
 
             if (route.estimatedMinutes() > request.maxDeliveryMinutes()) {

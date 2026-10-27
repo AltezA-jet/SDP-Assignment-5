@@ -1,5 +1,7 @@
 package com.example.delivery.model;
 
+import java.util.Objects;
+
 public record Route(
         String id,
         Location origin,
@@ -10,16 +12,19 @@ public record Route(
         double co2Kg,
         boolean available,
         int safetyScore,
-        double onTimeRate
+        double onTimeRate,
+        RouteType routeType,
+        TrafficLevel trafficLevel
 ) {
     public Route {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Route ID cannot be empty");
         }
 
-        if (origin == null || destination == null) {
-            throw new IllegalArgumentException("Locations cannot be null");
-        }
+        Objects.requireNonNull(origin, "Origin cannot be null");
+        Objects.requireNonNull(destination, "Destination cannot be null");
+        Objects.requireNonNull(routeType, "Route type cannot be null");
+        Objects.requireNonNull(trafficLevel, "Traffic level cannot be null");
 
         if (!Double.isFinite(distanceKm) || distanceKm <= 0
                 || estimatedMinutes <= 0
@@ -36,5 +41,34 @@ public record Route(
                 || onTimeRate < 0 || onTimeRate > 100) {
             throw new IllegalArgumentException("On-time rate must be 0-100");
         }
+    }
+
+    // Backward-compatible constructor for existing code and tests.
+    public Route(
+            String id,
+            Location origin,
+            Location destination,
+            double distanceKm,
+            int estimatedMinutes,
+            double cost,
+            double co2Kg,
+            boolean available,
+            int safetyScore,
+            double onTimeRate) {
+
+        this(
+                id,
+                origin,
+                destination,
+                distanceKm,
+                estimatedMinutes,
+                cost,
+                co2Kg,
+                available,
+                safetyScore,
+                onTimeRate,
+                RouteType.CITY_STREET,
+                TrafficLevel.MEDIUM
+        );
     }
 }
